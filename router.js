@@ -7,10 +7,14 @@ const {
   signUp,
   updateUser,
   deleteUser,
-  loginUser
+  loginUser,
+  getAllUser,
+  searchUserByFname
 } = require("./controllers/user.controller");
 
 router.get("/users", getUser);
+router.get("/users/name", searchUserByFname);
+router.get("/users/list", getAllUser);
 router.post("/users", signUp);
 router.put("/users/:id", updateUser);
 router.delete("/users/:todoID", deleteUser);

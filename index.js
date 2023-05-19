@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const router = require("./router");
 const app = express();
+const bodyParser = require('body-parser');
 
 dotenv.config();
 const PORT = 7001;
@@ -19,7 +20,8 @@ try {
 }
 // app.use(cors());
 // app.set("view engine", "ejs");
-app.use(express.json());
+// app.use(express.json());
+app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(router);
 

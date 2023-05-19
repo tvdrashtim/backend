@@ -12,6 +12,30 @@ const getUser = (req, res) => {
 		});
 }
 
+const getAllUser = async (req, res) => {
+	const pageNumber = req.query.pageNumber || 1;
+	const pageSize = req.query.pageSize || 3;
+
+	const startIndex = (pageNumber - 1) * pageSize;
+	const users = await User.find().skip(startIndex).limit(pageSize);
+
+	res.json({
+		user: users,
+		pageNo: req.query.pageNumber,
+	});
+};
+
+const searchUserByFname = (req, res) => {
+	const { f_name } = req.query;
+	User.find({ f_name })
+		.then(users => {
+			res.json(users);
+		})
+		.catch(err => {
+			res.send(err);
+		});
+}
+
 const signUp = async (req, res) => {
 	const { f_name, l_name, email, password, address, contact } = req.body;
 	if (!f_name || !l_name || !email || !password || !address, !contact) {
@@ -107,27 +131,19 @@ const loginUser = async (req, res) => {
 		});
 	}
 
-	const emailRegex = /^[a-z][0-9]@[a-z]+\.[a-z]+$/;
-	if (!emailRegex.test(email)) {
-		return res.status(StatusCodes.BAD_REQUEST).json({
-			message: 'Invalid email',
-		});
-	}
-
 	const users = await User.findOne({ email });
-	if (!user) {
+	if (!users) {
 		return res.status(StatusCodes.NOT_FOUND).json({
 			message: 'User not found',
 		});
 	}
 
-	const user = users[0];
-	const isMatch = await bcrypt.compare(password, user.password);
+	const isMatch = await bcrypt.compare(password, users.password);
 	console.log("isMatch", isMatch);
 
 	if (isMatch) {
 		console.log("Success");
-		res.status(200).json(user);
+		res.status(200).json(users);
 	} else {
 		console.log("not valid");
 		res.status(400).json({ message: "Invalid details" });
@@ -139,5 +155,7 @@ module.exports = {
 	signUp,
 	updateUser,
 	deleteUser,
-	loginUser
+	loginUser,
+	getAllUser,
+	searchUserByFname
 };
