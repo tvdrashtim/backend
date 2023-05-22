@@ -9,12 +9,14 @@ const {
   deleteUser,
   loginUser,
   getAllUser,
-  searchUserByFname
+  searchUserByFname,
+  getUserById
 } = require("./controllers/user.controller");
 
 router.get("/users", getUser);
+router.get("/users/:id", getUserById);
 router.get("/users/name", searchUserByFname);
-router.get("/users/list", getAllUser);
+router.get("/user", getAllUser);
 router.post("/users", signUp);
 router.put("/users/:id", updateUser);
 router.delete("/users/:todoID", deleteUser);

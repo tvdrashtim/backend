@@ -12,17 +12,82 @@ const getUser = (req, res) => {
 		});
 }
 
+const getUserById = (req, res) => {
+	const { id } = req.params;
+	User.findById(id)
+		.then(user => {
+			if (!user) {
+				res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+			} else {
+				res.json(user);
+			}
+		})
+		.catch(err => {
+			res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(err);
+		});
+}
+
+// const getAllUser = async (req, res) => {
+// 	const pageNumber = req.query.pageNumber || 1;
+// 	const pageSize = req.query.pageSize || 3;
+
+// 	const startIndex = (pageNumber - 1) * pageSize;
+// 	const users = await User.find().skip(startIndex).limit(pageSize);
+
+// 	res.json({
+// 		user: users,
+// 		pageNo: req.query.pageNumber,
+// 	});
+// };
+
 const getAllUser = async (req, res) => {
-	const pageNumber = req.query.pageNumber || 1;
-	const pageSize = req.query.pageSize || 3;
+	const searchQuery = req.query.search || '';
+	const pageNumber = parseInt(req.query.pageNumber) || 1;
+	const pageSize = parseInt(req.query.pageSize) || 3;
 
 	const startIndex = (pageNumber - 1) * pageSize;
-	const users = await User.find().skip(startIndex).limit(pageSize);
+	const endIndex = pageNumber * pageSize;
 
-	res.json({
-		user: users,
-		pageNo: req.query.pageNumber,
-	});
+	try {
+		const totalCount = await User.countDocuments({ 
+			$or: [
+        { f_name: { $regex: searchQuery, $options: 'i' } },
+        { l_name: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } },
+        { address: { $regex: searchQuery, $options: 'i' } },
+      ],
+		 });
+
+		const users = await User.find({ 
+			$or: [
+        { f_name: { $regex: searchQuery, $options: 'i' } },
+        { l_name: { $regex: searchQuery, $options: 'i' } },
+        { email: { $regex: searchQuery, $options: 'i' } },
+        { address: { $regex: searchQuery, $options: 'i' } },
+      ],
+		 })
+			.skip(startIndex)
+			.limit(pageSize);
+
+		const response = {
+			users,
+			page: pageNumber,
+			// pageSize,
+			totalCount,
+		};
+
+		if (endIndex < totalCount) {
+			response.nextPage = pageNumber + 1;
+		}
+
+		if (startIndex > 0) {
+			response.previousPage = pageNumber - 1;
+		}
+
+		res.json(response);
+	} catch (error) {
+		res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error);
+	}
 };
 
 const searchUserByFname = (req, res) => {
@@ -157,5 +222,6 @@ module.exports = {
 	deleteUser,
 	loginUser,
 	getAllUser,
-	searchUserByFname
+	searchUserByFname,
+	getUserById
 };
