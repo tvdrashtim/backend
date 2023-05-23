@@ -38,6 +38,11 @@ const EmployeesignUp = async (req, res) => {
 	}
 };
 
+const imageUpload = (req, res) => {
+	res.send("file upload")
+}
+
 module.exports = {
-	EmployeesignUp
+	EmployeesignUp,
+	imageUpload
 };
